@@ -14,18 +14,20 @@ Camera Gestures uses MediaPipe hand tracking to recognize hand poses in real tim
 ### State machine
 
 ```
-IDLE ──[closed fist held 1s]──> COMMAND_MODE ──[gesture held 1s]──> RUNNING_COMMAND ──> IDLE
+IDLE ──[closed fist held X seconds]──> COMMAND_MODE ──[gesture held X seconds]──> RUNNING_COMMAND ──> IDLE
                                       │
-                                      └──[5s timeout]──> IDLE
+                                      └──[X seconds timeout]──> IDLE
 ```
+
+All the timeout values are specified in the config.yaml file.
 
 ### Recognized gestures
 
 | Gesture | Name | Default action |
 |---------|------|----------------|
 | Closed fist (pointing up) | `closed_fist` | Wake gesture (enters command mode) |
-| Index finger extended | `fingers_extended:index` | Turn on office lights |
-| Index + middle fingers | `fingers_extended:index+middle` | Turn off office lights |
+| Index finger extended | `fingers_extended:index` | Turn on office lights (example code) |
+| Index + middle fingers | `fingers_extended:index+middle` | Turn off office lights (example code) |
 
 Gestures are recognized from finger extension states. Any combination of extended fingers produces a `fingers_extended:` name that can be mapped to a command.
 

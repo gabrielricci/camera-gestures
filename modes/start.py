@@ -14,7 +14,7 @@ from commands import TurnOffOfficeLights, TurnOnOfficeLights
 from hooks.console_hook import ConsoleHook
 from hooks.hue_hook import HueHook
 from controller import GestureController
-from hue import get_bridge, list_lights
+from hue import get_bridge
 
 
 def build_registry() -> CommandRegistry:
@@ -26,12 +26,12 @@ def build_registry() -> CommandRegistry:
 
 def run() -> None:
     hue_cfg = integrations.get("hue")
+
     if hue_cfg.get("enabled"):
         bridge = get_bridge()
         context.register("hue_bridge", bridge)
-        list_lights(bridge)
     else:
-        print("[hue] Integration disabled — skipping")
+        print("Hue Integration disabled — skipping")
 
     sm = StateMachine()
     registry = build_registry()

@@ -1,6 +1,8 @@
 hue:
-  enabled: true
-  bridge_ip: 192.168.15.29
-  office_light_ids: [5, 6]
+  bridge_ip: 0.0.0.0
   command_mode_hue: 46920
   command_mode_transition: 2
+  enabled: false
+  office_light_ids:
+  - 5
+  - 6
