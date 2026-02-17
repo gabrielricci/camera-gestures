@@ -1,0 +1,14 @@
+camera_index: 0
+frame_width: 640
+frame_height: 480
+
+wake_hold_seconds: 1.0
+command_hold_seconds: 1.0
+command_timeout_seconds: 5.0
+command_debounce_seconds: 2.0
+
+gui_enabled: true
+
+mediapipe_max_hands: 1
+mediapipe_min_detection_confidence: 0.7
+mediapipe_min_tracking_confidence: 0.5
