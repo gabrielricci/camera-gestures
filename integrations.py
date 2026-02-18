@@ -31,5 +31,9 @@ def get(integration: str) -> dict:
 
 def update(integration: str, **kwargs) -> None:
     data = load()
+
+    if not data.get(integration):
+        data[integration] = {}
+
     data[integration].update(kwargs)
     save()

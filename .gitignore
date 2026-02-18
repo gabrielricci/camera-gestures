@@ -2,3 +2,4 @@ __pycache__/
 *.pyc
 .dir-locals.el
 hand_landmarker.task
+integrations.yaml

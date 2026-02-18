@@ -29,6 +29,14 @@ def _configure_tuya() -> None:
         gateway_id = dev.get("gateway_id", "")
         if gateway_id:
             entry["gateway_id"] = gateway_id
+        if category == "infrared_ac" and gateway_id:
+            print(f"    Fetching IR AC keys for '{name}'...")
+            keys_resp = tuya.request_ir_ac_keys(cloud, gateway_id, dev_id)
+            ir_result = keys_resp.get("result", {})
+            if ir_result:
+                entry["category_id"] = ir_result.get("category_id")
+                entry["remote_index"] = ir_result.get("remote_index")
+                entry["keys"] = [k["key"] for k in ir_result.get("key_list", [])]
         devices_cfg[safe_name] = entry
 
     integrations.update(

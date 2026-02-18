@@ -22,8 +22,24 @@ def list_devices(cloud: tinytuya.Cloud) -> list[dict]:
     return cloud.getdevices()
 
 
+def request_ir_ac_keys(cloud: tinytuya.Cloud, gateway_id: str, device_id: str) -> dict:
+    """Fetch IR AC keys directly by IDs, without relying on saved integrations config.
+
+    Use this during initial configuration, before devices have been persisted.
+    For runtime use after configuration, prefer get_ir_ac_keys() which resolves
+    IDs from the saved integrations config by device name.
+    """
+    return cloud.cloudrequest(
+        f"/v2.0/infrareds/{gateway_id}/remotes/{device_id}/keys", "GET"
+    )
+
+
 def get_ir_ac_keys(cloud: tinytuya.Cloud, device_name: str) -> dict:
-    """Get the keys of an IR AC ."""
+    """Fetch IR AC keys for a named device using the saved integrations config.
+
+    Use this at runtime after configuration is complete. For use during
+    initial setup before devices are saved, use request_ir_ac_keys() instead.
+    """
     device = integrations.get("tuya").get("devices", {}).get(device_name, None)
     if not device:
         print(f"[tuya] Device {device_name} does not exist!")
