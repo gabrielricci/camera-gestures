@@ -1,0 +1,111 @@
+"""Tuya device communication via tinytuya Cloud API."""
+
+from __future__ import annotations
+
+import tinytuya
+
+import integrations
+
+
+def get_cloud(api_key: str, api_secret: str, api_region: str = "us") -> tinytuya.Cloud:
+    """Return a connected tinytuya Cloud instance."""
+    cloud = tinytuya.Cloud(
+        apiRegion=api_region,
+        apiKey=api_key,
+        apiSecret=api_secret,
+    )
+    return cloud
+
+
+def list_devices(cloud: tinytuya.Cloud) -> list[dict]:
+    """Fetch all devices from the Tuya Cloud account."""
+    return cloud.getdevices()
+
+
+def get_ir_ac_keys(cloud: tinytuya.Cloud, device_name: str) -> dict:
+    """Get the keys of an IR AC ."""
+    device = integrations.get("tuya").get("devices", {}).get(device_name, None)
+    if not device:
+        print(f"[tuya] Device {device_name} does not exist!")
+        return {}
+
+    if device.get("type") == "infrared_ac":
+        gateway_id = device["gateway_id"]
+        device_id = device["id"]
+
+        return cloud.cloudrequest(
+            f"/v2.0/infrareds/{gateway_id}/remotes/{device_id}/keys", "GET"
+        )
+
+    else:
+        return {}
+
+
+def turn_on_ir_ac(cloud: tinytuya.Cloud, device_name: str) -> bool:
+    """Turn on a device via Cloud API."""
+    device = integrations.get("tuya").get("devices", {}).get(device_name, None)
+    if not device:
+        print(f"[tuya] Device {device_name} does not exist!")
+        return False
+
+    if device.get("type") == "infrared_ac":
+        gateway_id = device["gateway_id"]
+        device_id = device["id"]
+
+        result = cloud.cloudrequest(
+            f"/v2.0/infrareds/{gateway_id}/remotes/{device_id}/command",
+            "POST",
+            {"key": "PowerOn", "categoryId": 5, "remoteIndex": 10502},
+        )
+
+        print(f"[tuya] Device {device_name} turn ON signal sent: {result}")
+        return True
+    else:
+        print(f"[tuya] Device {device_name} is NOT an infrared AC")
+        return False
+
+
+def turn_off_ir_ac(cloud: tinytuya.Cloud, device_name: str) -> bool:
+    """Turn off a device via Cloud API."""
+    device = integrations.get("tuya").get("devices", {}).get(device_name, None)
+    if not device:
+        print(f"[tuya] Device {device_name} does not exist!")
+        return False
+
+    if device.get("type") == "infrared_ac":
+        gateway_id = device["gateway_id"]
+        device_id = device["id"]
+
+        result = cloud.cloudrequest(
+            f"/v2.0/infrareds/{gateway_id}/remotes/{device_id}/command",
+            "POST",
+            {"key": "PowerOff", "categoryId": 5, "remoteIndex": 10502},
+        )
+
+        print(f"[tuya] Device {device_name} turn OFF signal sent: {result}")
+        return True
+    else:
+        print(f"[tuya] Device {device_name} is NOT an infrared AC")
+        return False
+
+
+def send_ir_command(cloud: tinytuya.Cloud, device_name: str, ir_code: str) -> None:
+    """Send a learned IR code via an IR blaster device."""
+    device = integrations.get("tuya").get("devices", {}).get(device_name, None)
+    if not device:
+        print(f"[tuya] Device {device_name} does not exist!")
+        return
+
+    commands = {"commands": [{"code": "201", "value": ir_code}]}
+    result = cloud.sendcommand(device["id"], commands)
+    print(f"[tuya] IR command sent: {result}")
+
+
+def get_status(cloud: tinytuya.Cloud, device_name: str) -> dict:
+    """Return the current device state from Cloud."""
+    device = integrations.get("tuya").get("devices", {}).get(device_name, None)
+    if not device:
+        print(f"[tuya] Device {device_name} does not exist!")
+        return {}
+
+    return cloud.getstatus(device["id"])

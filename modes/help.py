@@ -10,6 +10,7 @@ Modes:
 
 Integrations:
   hue               Discover Philips Hue bridge and list lights
+  tuya              Discover Tuya devices on local network
 """
 
 

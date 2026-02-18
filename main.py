@@ -3,6 +3,7 @@
 Usage:
     python main.py start             Start the gesture listener
     python main.py configure hue     Discover Hue bridge and list lights
+    python main.py configure tuya    Discover Tuya devices on local network
     python main.py help              Show this help message
 """
 
@@ -26,7 +27,7 @@ def main() -> None:
         if len(args) < 2:
             print("Error: 'configure' requires an integration name")
             print("Usage: python main.py configure <name>")
-            print("Supported integrations: hue")
+            print("Supported integrations: hue, tuya")
             sys.exit(1)
         configure.run(args[1])
     else:

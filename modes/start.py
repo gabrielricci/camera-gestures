@@ -11,17 +11,36 @@ from state_machine import State, StateMachine
 from gestures.detector import HandDetector
 from commands.registry import CommandRegistry
 from commands import TurnOffOfficeLights, TurnOnOfficeLights
+from commands.turn_on_office_ac import TurnOnOfficeAc
+from commands.turn_off_office_ac import TurnOffOfficeAc
 from hooks.console_hook import ConsoleHook
 from hooks.hue_hook import HueHook
 from controller import GestureController
 from hue import get_bridge
+import tuya
 
 
-def build_registry() -> CommandRegistry:
+def build_registry(tuya_enabled: bool) -> CommandRegistry:
     registry = CommandRegistry()
     registry.register("fingers_extended:index+middle", TurnOffOfficeLights())
     registry.register("fingers_extended:index", TurnOnOfficeLights())
+
+    if tuya_enabled:
+        registry.register("fingers_extended:thumb+pinky", TurnOnOfficeAc())
+        registry.register("fingers_extended:thumb+index", TurnOffOfficeAc())
     return registry
+
+
+def _init_tuya() -> None:
+    """Connect to Tuya Cloud and register device IDs in context."""
+    tuya_cfg = integrations.get("tuya")
+    cloud = tuya.get_cloud(
+        tuya_cfg["api_key"],
+        tuya_cfg["api_secret"],
+        tuya_cfg.get("api_region", "us"),
+    )
+    context.register("tuya_cloud", cloud)
+    print("[tuya] Connected to Tuya Cloud")
 
 
 def run() -> None:
@@ -33,8 +52,15 @@ def run() -> None:
     else:
         print("Hue Integration disabled — skipping")
 
+    tuya_cfg = integrations.get("tuya")
+    tuya_enabled = tuya_cfg.get("enabled", False) if tuya_cfg else False
+    if tuya_enabled:
+        _init_tuya()
+    else:
+        print("Tuya Integration disabled — skipping")
+
     sm = StateMachine()
-    registry = build_registry()
+    registry = build_registry(tuya_enabled)
 
     hooks = [ConsoleHook()]
     if hue_cfg.get("enabled"):
