@@ -7,7 +7,7 @@ from pathlib import Path
 
 import yaml
 
-_FILE = Path(os.path.dirname(__file__)) / "integrations.yaml"
+_FILE = Path(os.path.dirname(__file__)).parent / "integrations.yaml"
 
 _cache: dict | None = None
 

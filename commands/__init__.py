@@ -1,2 +1,3 @@
-from commands.turn_off_office_lights import TurnOffOfficeLights
-from commands.turn_on_office_lights import TurnOnOfficeLights
+from commands.hue_turn_on_lights import HueTurnOnLights
+from commands.hue_turn_off_lights import HueTurnOffLights
+from commands.tuya_press_key_infrared_ac import TuyaPressKeyInfraredAC

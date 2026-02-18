@@ -3,12 +3,11 @@
 import sys
 
 import integrations
-from hue import get_bridge, list_lights
+from integrations.hue import get_bridge, list_lights
+from integrations import tuya
 
 
 def _configure_tuya() -> None:
-    import tuya
-
     api_key = input("Tuya IoT Platform API key: ").strip()
     api_secret = input("Tuya IoT Platform API secret: ").strip()
     api_region = input("API region (us/eu/cn) [us]: ").strip() or "us"

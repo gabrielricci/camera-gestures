@@ -5,10 +5,17 @@ from __future__ import annotations
 import requests
 from phue import Bridge
 
+import context
 import integrations
 
 NUPNP_URL = "https://discovery.meethue.com/"
 _DEFAULT_IP = "0.0.0.0"
+
+
+def init() -> None:
+    """Connect to the Hue bridge and register it in context."""
+    bridge = get_bridge()
+    context.register("hue_bridge", bridge)
 
 
 def discover_bridge_ip() -> str:

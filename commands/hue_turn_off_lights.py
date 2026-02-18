@@ -1,11 +1,11 @@
 import bus
 import context
-import hue
+from integrations import hue
 
 
-class TurnOffOfficeLights:
-    _light_ids = [5, 6]
-    _color_green = {"hue": 25500, "sat": 100, "bri": 100, "transitiontime": 5}
+class HueTurnOffLights:
+    def __init__(self, light_ids: list):
+        self._light_ids = light_ids
 
     def execute(self) -> None:
         bridge = context.get("hue_bridge")

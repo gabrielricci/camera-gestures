@@ -3,3 +3,4 @@ __pycache__/
 .dir-locals.el
 hand_landmarker.task
 integrations.yaml
+gestures.yaml

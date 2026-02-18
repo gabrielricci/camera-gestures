@@ -4,7 +4,20 @@ from __future__ import annotations
 
 import tinytuya
 
+import context
 import integrations
+
+
+def init() -> None:
+    """Connect to Tuya Cloud and register it in context."""
+    cfg = integrations.get("tuya")
+    cloud = get_cloud(
+        cfg["api_key"],
+        cfg["api_secret"],
+        cfg.get("api_region", "us"),
+    )
+    context.register("tuya_cloud", cloud)
+    print("[tuya] Connected to Tuya Cloud")
 
 
 def get_cloud(api_key: str, api_secret: str, api_region: str = "us") -> tinytuya.Cloud:
@@ -57,8 +70,8 @@ def get_ir_ac_keys(cloud: tinytuya.Cloud, device_name: str) -> dict:
         return {}
 
 
-def turn_on_ir_ac(cloud: tinytuya.Cloud, device_name: str) -> bool:
-    """Turn on a device via Cloud API."""
+def press_key_ir_ac(cloud: tinytuya.Cloud, device_name: str, key: str) -> bool:
+    """Send a key press to an infrared AC device via Cloud API."""
     device = integrations.get("tuya").get("devices", {}).get(device_name, None)
     if not device:
         print(f"[tuya] Device {device_name} does not exist!")
@@ -71,34 +84,10 @@ def turn_on_ir_ac(cloud: tinytuya.Cloud, device_name: str) -> bool:
         result = cloud.cloudrequest(
             f"/v2.0/infrareds/{gateway_id}/remotes/{device_id}/command",
             "POST",
-            {"key": "PowerOn", "categoryId": 5, "remoteIndex": 10502},
+            {"key": key, "categoryId": device["category_id"], "remoteIndex": device["remote_index"]},
         )
 
-        print(f"[tuya] Device {device_name} turn ON signal sent: {result}")
-        return True
-    else:
-        print(f"[tuya] Device {device_name} is NOT an infrared AC")
-        return False
-
-
-def turn_off_ir_ac(cloud: tinytuya.Cloud, device_name: str) -> bool:
-    """Turn off a device via Cloud API."""
-    device = integrations.get("tuya").get("devices", {}).get(device_name, None)
-    if not device:
-        print(f"[tuya] Device {device_name} does not exist!")
-        return False
-
-    if device.get("type") == "infrared_ac":
-        gateway_id = device["gateway_id"]
-        device_id = device["id"]
-
-        result = cloud.cloudrequest(
-            f"/v2.0/infrareds/{gateway_id}/remotes/{device_id}/command",
-            "POST",
-            {"key": "PowerOff", "categoryId": 5, "remoteIndex": 10502},
-        )
-
-        print(f"[tuya] Device {device_name} turn OFF signal sent: {result}")
+        print(f"[tuya] Device {device_name} key '{key}' sent: {result}")
         return True
     else:
         print(f"[tuya] Device {device_name} is NOT an infrared AC")
