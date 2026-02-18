@@ -74,16 +74,7 @@ This will:
 3. List all lights with their IDs
 4. Save the bridge IP and enable the integration in `integrations.yaml`
 
-After pairing, edit `integrations.yaml` to set which lights to use for command-mode feedback:
-
-```yaml
-hue:
-  enabled: true
-  bridge_ip: 192.168.1.100
-  office_light_ids: [5, 6]       # light IDs to flash blue during command mode
-  command_mode_hue: 46920        # hue value for command mode indicator (blue)
-  command_mode_transition: 2     # transition time in units of 100ms
-```
+After pairing, `integrations.yaml` will contain the bridge IP and the integration will be enabled. No further edits are required there — command-mode light behaviour is configured in `gestures.yaml` via the `HueHook` params (see below).
 
 ### Configure Tuya (optional)
 
@@ -139,42 +130,54 @@ Per-integration settings. Integrations that are `enabled: false` are skipped at 
 Maps gesture names to commands and their parameters. Adding or changing a binding requires no code changes — just edit this file and restart.
 
 ```yaml
-fingers_extended:index:
-  command: HueTurnOnLights
-  integration: hue
-  params:
-    light_ids: [5, 6]
-    color:
-      hue: 14922
-      sat: 144
-      bri: 254
-      transitiontime: 20
+hooks:
+  - hook: ConsoleHook
 
-fingers_extended:index+middle:
-  command: HueTurnOffLights
-  integration: hue
-  params:
-    light_ids: [5, 6]
+  - hook: HueHook
+    integration: hue
+    params:
+      light_ids: [5, 6]   # lights to control during command mode
+      hue: 46920           # hue value for command mode indicator (blue)
+      sat: 254             # saturation
+      bri: 100             # brightness
+      transition: 2        # transition time in units of 100ms
 
-fingers_extended:thumb+pinky:
-  command: TuyaPressKeyInfraredAC
-  integration: tuya
-  params:
-    device: ar_da_sala
-    key: PowerOn
+  - hook: OverlayHook     # draws a green border on the preview window
 
-fingers_extended:thumb+index:
-  command: TuyaPressKeyInfraredAC
-  integration: tuya
-  params:
-    device: ar_da_sala
-    key: PowerOff
+gestures:
+  fingers_extended:index:
+    command: HueTurnOnLights
+    integration: hue
+    params:
+      light_ids: [5, 6]
+      color:
+        hue: 14922
+        sat: 144
+        bri: 254
+        transitiontime: 20
+
+  fingers_extended:index+middle:
+    command: HueTurnOffLights
+    integration: hue
+    params:
+      light_ids: [5, 6]
+
+  fingers_extended:thumb+pinky:
+    command: TuyaPressKeyInfraredAC
+    integration: tuya
+    params:
+      device: ar_da_sala
+      key: PowerOn
+
+  fingers_extended:thumb+index:
+    command: TuyaPressKeyInfraredAC
+    integration: tuya
+    params:
+      device: ar_da_sala
+      key: PowerOff
 ```
 
-Each entry requires:
-- **`command`** — the command class to instantiate
-- **`integration`** — the integration tag; if that integration is disabled, the binding is skipped with a warning
-- **`params`** — constructor arguments passed directly to the command class
+Both sections support an `integration` field — entries whose integration is disabled are skipped with a printed warning. The `params` dict is passed as-is to the command or hook constructor; no strict schema is enforced.
 
 ## Architecture
 
@@ -187,14 +190,15 @@ Each entry requires:
 
 ### Adding a new gesture binding
 
-Edit `gestures.yaml` — no Python changes needed:
+Edit the `gestures:` section of `gestures.yaml` — no Python changes needed:
 
 ```yaml
-fingers_extended:thumb+middle:
-  command: HueTurnOnLights
-  integration: hue
-  params:
-    light_ids: [3]
+gestures:
+  fingers_extended:thumb+middle:
+    command: HueTurnOnLights
+    integration: hue
+    params:
+      light_ids: [3]
 ```
 
 ### Adding a new command
@@ -205,8 +209,9 @@ fingers_extended:thumb+middle:
 
 ### Adding a new hook
 
-1. Implement `on_enter_command_mode()`, `on_exit_command_mode()`, and `on_frame()`
-2. Add it to the hooks list in `modes/start.py`
+1. Create a class with `__init__(self, params: dict)`, `on_enter_command_mode()`, `on_exit_command_mode()`, and `on_frame()` in `hooks/`
+2. Register it in `hooks/__init__.py`'s `HOOK_CLASSES` dict
+3. Add it to the `hooks:` section of `gestures.yaml`
 
 ## License
 

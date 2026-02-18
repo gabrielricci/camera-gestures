@@ -6,6 +6,9 @@ BORDER_COLOR = (0, 255, 0)  # green in BGR
 
 
 class OverlayHook:
+    def __init__(self, params: dict):
+        pass
+
     def on_enter_command_mode(self) -> None:
         pass
 

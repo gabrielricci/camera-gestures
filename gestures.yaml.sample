@@ -1,30 +1,41 @@
-fingers_extended:index:
-  command: HueTurnOnLights
-  integration: hue
-  params:
-    light_ids: [5, 6]
-    color:
-      hue: 14922
-      sat: 144
-      bri: 254
-      transitiontime: 20
+hooks:
+  - hook: ConsoleHook
 
-fingers_extended:index+middle:
-  command: HueTurnOffLights
-  integration: hue
-  params:
-    light_ids: [5, 6]
+  - hook: HueHook
+    integration: hue
+    params:
+      light_ids: [5, 6]
 
-fingers_extended:thumb+pinky:
-  command: TuyaPressKeyInfraredAC
-  integration: tuya
-  params:
-    device: ar_da_sala
-    key: PowerOn
+  - hook: OverlayHook
 
-fingers_extended:thumb+index:
-  command: TuyaPressKeyInfraredAC
-  integration: tuya
-  params:
-    device: ar_da_sala
-    key: PowerOff
+gestures:
+  fingers_extended:index:
+    command: HueTurnOnLights
+    integration: hue
+    params:
+      light_ids: [5, 6]
+      color:
+        hue: 14922
+        sat: 144
+        bri: 254
+        transitiontime: 20
+
+  fingers_extended:index+middle:
+    command: HueTurnOffLights
+    integration: hue
+    params:
+      light_ids: [5, 6]
+
+  fingers_extended:thumb+pinky:
+    command: TuyaPressKeyInfraredAC
+    integration: tuya
+    params:
+      device: ar_da_sala
+      key: PowerOn
+
+  fingers_extended:thumb+index:
+    command: TuyaPressKeyInfraredAC
+    integration: tuya
+    params:
+      device: ar_da_sala
+      key: PowerOff

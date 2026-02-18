@@ -15,11 +15,12 @@ import integrations
 
 
 class HueHook:
-    def __init__(self, light_ids: list[int]) -> None:
-        self._light_ids = light_ids
-        hue_cfg = integrations.get("hue")
-        self._command_mode_hue = hue_cfg["command_mode_hue"]
-        self._command_mode_transition = hue_cfg["command_mode_transition"]
+    def __init__(self, params: dict) -> None:
+        self._light_ids = params["light_ids"]
+        self._hue = params["hue"]
+        self._sat = params["sat"]
+        self._bri = params["bri"]
+        self._transition = params["transition"]
         self._snapshot: dict[int, dict] = {}
         self._changed_by_command: set[int] = set()
 
@@ -44,10 +45,10 @@ class HueHook:
 
         cmd = {
             "on": True,
-            "hue": self._command_mode_hue,
-            "sat": 254,
-            "bri": 100,
-            "transitiontime": self._command_mode_transition,
+            "hue": self._hue,
+            "sat": self._sat,
+            "bri": self._bri,
+            "transitiontime": self._transition,
         }
         for lid in self._light_ids:
             bridge.set_light(lid, cmd)

@@ -52,10 +52,11 @@ def _configure_tuya() -> None:
 def run(integration: str) -> None:
     if integration == "hue":
         bridge = get_bridge()
-        integrations.update("hue", enabled=True)
         print("\nLights on this bridge:")
-        list_lights(bridge)
-        print("\nHue integration enabled and bridge IP saved.")
+        lights = list_lights(bridge)
+        devices = {str(l["id"]): {"name": l["name"]} for l in lights}
+        integrations.update("hue", enabled=True, devices=devices)
+        print("\nHue integration enabled, bridge IP and devices saved.")
     elif integration == "tuya":
         _configure_tuya()
     else:

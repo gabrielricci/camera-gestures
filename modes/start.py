@@ -4,15 +4,13 @@ import time
 
 import cv2
 
-import context
 import config
 import integrations
 from integrations import hue, tuya
 from state_machine import State, StateMachine
 from gestures.detector import HandDetector
 from commands.registry import CommandRegistry
-from hooks.console_hook import ConsoleHook
-from hooks.hue_hook import HueHook
+from hooks import build_from_yaml as build_hooks
 from controller import GestureController
 
 
@@ -35,14 +33,7 @@ def run() -> None:
 
     sm = StateMachine()
     registry = CommandRegistry.build_from_yaml("gestures.yaml", enabled_integrations)
-
-    hooks = [ConsoleHook()]
-    if hue_cfg.get("enabled"):
-        hooks.append(HueHook(hue_cfg["office_light_ids"]))
-    if config.GUI_ENABLED:
-        from hooks.overlay_hook import OverlayHook
-
-        hooks.append(OverlayHook())
+    hooks = build_hooks("gestures.yaml", enabled_integrations)
 
     controller = GestureController(sm, registry, hooks)
 

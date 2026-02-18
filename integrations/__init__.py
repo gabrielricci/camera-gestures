@@ -15,8 +15,11 @@ _cache: dict | None = None
 def load() -> dict:
     global _cache
     if _cache is None:
+        if not _FILE.exists():
+            print(f"[integrations] {_FILE.name} not found — creating empty file")
+            _FILE.touch()
         with open(_FILE) as f:
-            _cache = yaml.safe_load(f)
+            _cache = yaml.safe_load(f) or {}
     return _cache
 
 
@@ -25,8 +28,8 @@ def save() -> None:
         yaml.dump(_cache, f, default_flow_style=False)
 
 
-def get(integration: str) -> dict:
-    return load()[integration]
+def get(integration: str, default={}) -> dict:
+    return load().get(integration, default)
 
 
 def update(integration: str, **kwargs) -> None:

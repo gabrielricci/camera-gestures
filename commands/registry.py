@@ -31,10 +31,12 @@ class CommandRegistry:
         return FallbackCommand(gesture_name)
 
     @classmethod
-    def build_from_yaml(cls, path: str, enabled_integrations: set[str]) -> "CommandRegistry":
+    def build_from_yaml(
+        cls, path: str, enabled_integrations: set[str]
+    ) -> "CommandRegistry":
         registry = cls()
         with open(path) as f:
-            gestures = yaml.safe_load(f)
+            gestures = yaml.safe_load(f).get("gestures", {})
         for gesture, cfg in gestures.items():
             integration = cfg.get("integration")
             if integration and integration not in enabled_integrations:
@@ -42,7 +44,9 @@ class CommandRegistry:
                 continue
             command_cls = COMMAND_CLASSES.get(cfg["command"])
             if command_cls is None:
-                print(f"[gestures] Unknown command '{cfg['command']}' for '{gesture}', skipping")
+                print(
+                    f"[gestures] Unknown command '{cfg['command']}' for '{gesture}', skipping"
+                )
                 continue
             registry.register(gesture, command_cls(**cfg.get("params", {})))
         return registry

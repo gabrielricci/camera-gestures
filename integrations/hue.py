@@ -36,7 +36,7 @@ def discover_bridge_ip() -> str:
 
 def _resolve_ip() -> str:
     """Return the bridge IP from integrations.yaml, discovering if needed."""
-    cfg = integrations.get("hue")
+    cfg = integrations.get("hue", {})
     ip = cfg.get("bridge_ip", _DEFAULT_IP)
     if ip == _DEFAULT_IP:
         ip = discover_bridge_ip()

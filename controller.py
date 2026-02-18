@@ -41,7 +41,6 @@ class GestureController:
 
     def _handle_idle(self, gesture: str | None, now: float) -> None:
         if is_wake_gesture(gesture):
-            print("wake gesture")
             if self._wake_gesture_start is None:
                 self._wake_gesture_start = now
             elif now - self._wake_gesture_start >= config.WAKE_HOLD_SECONDS:
