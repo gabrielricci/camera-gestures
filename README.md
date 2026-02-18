@@ -4,6 +4,8 @@ Control your smart home with hand gestures detected through your webcam.
 
 Camera Gestures uses MediaPipe hand tracking to recognize hand poses in real time and map them to actions — supporting Philips Hue lights and Tuya infrared AC devices. Hold a closed fist to enter command mode, then make a gesture to trigger a command.
 
+https://github.com/gabrielricci/camera-gestures/raw/refs/heads/main/demo.mp4
+
 ## How it works
 
 1. **Wake gesture** — Hold a closed fist (pointing up) for 1 second to enter command mode
