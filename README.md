@@ -23,15 +23,12 @@ All timeout values are set in `config.yaml`.
 
 ### Recognized gestures
 
-| Gesture | Name |
-|---------|------|
-| Closed fist (pointing up) | `closed_fist` — wake gesture (enters command mode) |
-| Index finger | `fingers_extended:index` |
-| Index + middle fingers | `fingers_extended:index+middle` |
-| Thumb + pinky | `fingers_extended:thumb+pinky` |
-| Thumb + index | `fingers_extended:thumb+index` |
+Gestures are identified by which fingers are extended. A closed fist is the wake gesture that enters command mode. Any combination of extended fingers produces a bindable name, for example:
 
-Any combination of extended fingers produces a `fingers_extended:` name. Gesture-to-command bindings are defined entirely in `gestures.yaml` — no code changes needed.
+- `fingers_extended:index` — index finger only
+- `fingers_extended:thumb+pinky` — thumb and pinky
+
+Gesture-to-command bindings are defined entirely in `gestures.yaml` — no code changes needed.
 
 ## Setup
 
@@ -72,9 +69,9 @@ This will:
 1. Auto-discover your Hue bridge IP via the Philips N-UPnP API
 2. Prompt you to press the physical button on the bridge
 3. List all lights with their IDs
-4. Save the bridge IP and enable the integration in `integrations.yaml`
+4. Save the bridge IP, device list, and enable the integration in `integrations.yaml`
 
-After pairing, `integrations.yaml` will contain the bridge IP and the integration will be enabled. No further edits are required there — command-mode light behaviour is configured in `gestures.yaml` via the `HueHook` params (see below).
+To refresh the device list after adding new lights, run the command again.
 
 ### Configure Tuya (optional)
 
@@ -87,6 +84,8 @@ This will:
 2. Fetch all devices registered to your account
 3. Auto-discover IR AC keys for infrared AC devices
 4. Save device IDs, keys, and credentials to `integrations.yaml`
+
+To refresh the device list, run the command again.
 
 ## Usage
 
@@ -123,11 +122,11 @@ mediapipe_min_tracking_confidence: 0.5
 
 ### `integrations.yaml`
 
-Per-integration settings. Integrations that are `enabled: false` are skipped at startup and their gesture bindings are ignored.
+Managed automatically by the `configure` commands — do not edit by hand. You can inspect it to see which devices were discovered and re-run `configure` to refresh the list.
 
 ### `gestures.yaml`
 
-Maps gesture names to commands and their parameters. Adding or changing a binding requires no code changes — just edit this file and restart.
+The main configuration file. Contains two root keys: `hooks` and `gestures`. Adding or changing a binding requires no code changes — just edit this file and restart.
 
 ```yaml
 hooks:
@@ -156,25 +155,12 @@ gestures:
         bri: 254
         transitiontime: 20
 
-  fingers_extended:index+middle:
-    command: HueTurnOffLights
-    integration: hue
-    params:
-      light_ids: [5, 6]
-
   fingers_extended:thumb+pinky:
     command: TuyaPressKeyInfraredAC
     integration: tuya
     params:
       device: ar_da_sala
       key: PowerOn
-
-  fingers_extended:thumb+index:
-    command: TuyaPressKeyInfraredAC
-    integration: tuya
-    params:
-      device: ar_da_sala
-      key: PowerOff
 ```
 
 Both sections support an `integration` field — entries whose integration is disabled are skipped with a printed warning. The `params` dict is passed as-is to the command or hook constructor; no strict schema is enforced.
@@ -212,6 +198,12 @@ gestures:
 1. Create a class with `__init__(self, params: dict)`, `on_enter_command_mode()`, `on_exit_command_mode()`, and `on_frame()` in `hooks/`
 2. Register it in `hooks/__init__.py`'s `HOOK_CLASSES` dict
 3. Add it to the `hooks:` section of `gestures.yaml`
+
+## Roadmap
+
+- **Multi-hand recognition** — detect and act on gestures from both hands simultaneously, enabling two-handed combos as distinct bindings
+- **Dynamic/motion gestures** — recognize movement patterns over time (e.g. rotating a closed fist clockwise to raise volume, like the BMW X5 iDrive wheel) rather than only static poses
+- **Left/right hand differentiation** — treat the same gesture differently depending on which hand performs it, effectively doubling the available binding space
 
 ## License
 
