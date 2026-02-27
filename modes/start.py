@@ -9,6 +9,7 @@ import integrations
 from integrations import hue, tuya
 from state_machine import State, StateMachine
 from gestures.detector import HandDetector
+from gestures.pose_detector import PoseDetector
 from commands.registry import CommandRegistry
 from hooks import build_from_yaml as build_hooks
 from controller import GestureController
@@ -42,6 +43,7 @@ def run() -> None:
         min_detection_confidence=config.MEDIAPIPE_MIN_DETECTION_CONFIDENCE,
         min_tracking_confidence=config.MEDIAPIPE_MIN_TRACKING_CONFIDENCE,
     )
+    pose_detector = PoseDetector(max_poses=config.MEDIAPIPE_MAX_HANDS)
 
     cap = cv2.VideoCapture(config.CAMERA_INDEX)
     cap.set(cv2.CAP_PROP_FRAME_WIDTH, config.FRAME_WIDTH)
@@ -51,6 +53,9 @@ def run() -> None:
         print("ERROR: cannot open camera")
         return
 
+    pose_results = None
+    frame_count = 0
+
     try:
         while True:
             ok, frame = cap.read()
@@ -59,16 +64,25 @@ def run() -> None:
 
             frame = cv2.flip(frame, 1)
             results = detector.process(frame)
+            if frame_count % 30 == 0:
+                pose_results = pose_detector.process(frame)
+            frame_count += 1
             now = time.monotonic()
 
-            hand_landmarks = None
-            if results.hand_landmarks:
-                hand_landmarks = results.hand_landmarks[0]
+            all_hands = results.hand_landmarks or []
+            raised_hands = []
+            for lm in all_hands:
+                neck_y = pose_detector.neck_y_for_hand(
+                    lm[0].x, lm[0].y, pose_results, config.POSE_WRIST_MATCH_THRESHOLD
+                )
+                if neck_y is not None and lm[0].y < neck_y:
+                    raised_hands.append(lm)
 
-            if config.GUI_ENABLED and hand_landmarks:
-                detector.draw_landmarks(frame, hand_landmarks)
+            if config.GUI_ENABLED:
+                for lm in raised_hands:
+                    detector.draw_landmarks(frame, lm)
 
-            controller.handle_frame(now, hand_landmarks)
+            controller.handle_frame(now, raised_hands)
 
             in_command_mode = sm.state == State.COMMAND_MODE
             for hook in hooks:
@@ -84,6 +98,7 @@ def run() -> None:
         print("\nShutting down...")
     finally:
         detector.close()
+        pose_detector.close()
         cap.release()
         if config.GUI_ENABLED:
             cv2.destroyAllWindows()

@@ -1,7 +1,6 @@
 """GestureController — encapsulates per-frame gesture logic."""
 
 from __future__ import annotations
-from typing import Optional
 
 import time
 
@@ -31,13 +30,25 @@ class GestureController:
         self._command_gesture_name: str | None = None
         self._command_gesture_start: float | None = None
 
-    def handle_frame(self, now: float, hand_landmarks: Optional[list]) -> None:
-        gesture = recognize(hand_landmarks)
+    def handle_frame(self, now: float, all_hand_landmarks: list) -> None:
+        gesture = self._pick_gesture(all_hand_landmarks)
 
         if self._sm.state == State.IDLE:
             self._handle_idle(gesture, now)
         elif self._sm.state == State.COMMAND_MODE:
             self._handle_command_mode(gesture, now)
+
+    def _pick_gesture(self, all_hand_landmarks: list) -> str | None:
+        if not all_hand_landmarks:
+            return "no_hand"
+        gestures = [recognize(lm) for lm in all_hand_landmarks]
+        for g in gestures:
+            if is_wake_gesture(g):
+                return g
+        for g in gestures:
+            if g and g != "no_hand":
+                return g
+        return "no_hand"
 
     def _handle_idle(self, gesture: str | None, now: float) -> None:
         if is_wake_gesture(gesture):

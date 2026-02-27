@@ -2,5 +2,6 @@ __pycache__/
 *.pyc
 .dir-locals.el
 hand_landmarker.task
+pose_landmarker_lite.task
 integrations.yaml
 gestures.yaml

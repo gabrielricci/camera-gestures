@@ -49,10 +49,11 @@ cd camera-gestures
 pip install -r requirements.txt
 ```
 
-Download the MediaPipe hand landmark model:
+Download the MediaPipe hand landmark and pose models:
 
 ```bash
 wget -q https://storage.googleapis.com/mediapipe-models/hand_landmarker/hand_landmarker/float16/1/hand_landmarker.task
+wget -q https://storage.googleapis.com/mediapipe-models/pose_landmarker/pose_landmarker_lite/float16/1/pose_landmarker_lite.task
 ```
 
 Copy the sample gesture bindings and adjust to your needs:
@@ -117,9 +118,11 @@ command_hold_seconds: 1.0              # How long to hold a command gesture
 command_timeout_seconds: 5.0           # Command mode timeout
 command_debounce_seconds: 2.0          # Minimum time between commands
 
-mediapipe_max_hands: 1
+mediapipe_max_hands: 4
 mediapipe_min_detection_confidence: 0.7
 mediapipe_min_tracking_confidence: 0.5
+
+pose_wrist_match_threshold: 0.15      # max normalized distance to match hand→body
 ```
 
 ### `integrations.yaml`

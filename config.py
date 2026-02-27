@@ -26,3 +26,5 @@ GUI_ENABLED: bool = _data["gui_enabled"]
 MEDIAPIPE_MAX_HANDS: int = _data["mediapipe_max_hands"]
 MEDIAPIPE_MIN_DETECTION_CONFIDENCE: float = _data["mediapipe_min_detection_confidence"]
 MEDIAPIPE_MIN_TRACKING_CONFIDENCE: float = _data["mediapipe_min_tracking_confidence"]
+
+POSE_WRIST_MATCH_THRESHOLD: float = _data.get("pose_wrist_match_threshold", 0.15)

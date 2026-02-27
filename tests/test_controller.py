@@ -60,7 +60,7 @@ def drive(controller, gesture, now, recognize_path="controller.recognize",
           wake_path="controller.is_wake_gesture"):
     with patch(recognize_path, return_value=gesture), \
          patch(wake_path, side_effect=lambda g: g == "closed_fist"):
-        controller.handle_frame(now, object())
+        controller.handle_frame(now, [object()])
 
 
 # ---------------------------------------------------------------------------
@@ -261,3 +261,49 @@ def test_wake_gesture_in_command_mode_resets_command_tracking(controller, sm, re
     drive(controller, "fingers_extended:index", now=4.3)  # 0.8 s since reset < 1.0 s
 
     command.execute.assert_not_called()
+
+
+# ---------------------------------------------------------------------------
+# Multi-hand gesture priority (_pick_gesture)
+# ---------------------------------------------------------------------------
+
+def test_wake_gesture_wins_over_no_hand(controller, sm, hook):
+    def side_effect(lm):
+        return "closed_fist" if lm == "wake" else "no_hand"
+    with patch("controller.recognize", side_effect=side_effect), \
+         patch("controller.is_wake_gesture", side_effect=lambda g: g == "closed_fist"):
+        controller.handle_frame(0.0, ["wake", "other"])
+        controller.handle_frame(1.1, ["wake", "other"])
+    assert sm.state == State.COMMAND_MODE
+
+
+def test_all_no_hand_stays_idle(controller, sm):
+    with patch("controller.recognize", return_value="no_hand"), \
+         patch("controller.is_wake_gesture", side_effect=lambda g: g == "closed_fist"):
+        controller.handle_frame(0.0, ["a", "b"])
+    assert sm.state == State.IDLE
+
+
+def test_command_found_among_multiple_hands(controller, sm, registry):
+    command = MagicMock()
+    registry.resolve.return_value = command
+    def side_effect(lm):
+        if lm == "wake": return "closed_fist"
+        if lm == "cmd": return "fingers_extended:index"
+        return "no_hand"
+    with patch("controller.recognize", side_effect=side_effect), \
+         patch("controller.is_wake_gesture", side_effect=lambda g: g == "closed_fist"):
+        controller.handle_frame(0.0, ["wake", "other"])
+        controller.handle_frame(1.1, ["wake", "other"])
+        controller.handle_frame(3.0, ["cmd", "other"])
+        controller.handle_frame(4.1, ["cmd", "other"])
+    command.execute.assert_called_once()
+    assert sm.state == State.IDLE
+
+
+def test_empty_filtered_list_stays_idle(controller, sm):
+    with patch("controller.recognize", return_value="closed_fist"), \
+         patch("controller.is_wake_gesture", side_effect=lambda g: g == "closed_fist"):
+        controller.handle_frame(0.0, [])
+        controller.handle_frame(1.1, [])
+    assert sm.state == State.IDLE

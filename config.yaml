@@ -9,6 +9,7 @@ command_debounce_seconds: 2.0
 
 gui_enabled: true
 
-mediapipe_max_hands: 1
+mediapipe_max_hands: 4
+pose_wrist_match_threshold: 0.15
 mediapipe_min_detection_confidence: 0.7
 mediapipe_min_tracking_confidence: 0.5
